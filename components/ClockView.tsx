@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { TimezoneOption, Language, ClockStyle } from '../types';
 import { translations } from '../utils/translations';
 
@@ -126,46 +126,11 @@ const DigitalDigit: React.FC<{ char: string }> = ({ char }) => {
   );
 };
 
-// Helper to generate zone options
-const getMajorTimezones = (lang: Language): TimezoneOption[] => {
-  const zones = [
-    'UTC', 'Europe/London', 'Europe/Berlin', 'Europe/Moscow', 'Asia/Dubai',
-    'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Shanghai', 'Asia/Tokyo',
-    'Australia/Sydney', 'Pacific/Auckland', 'America/New_York',
-    'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Sao_Paulo',
-  ];
-  
-  // Use BCP 47 locales for proper date formatting
-  const localeMap: Record<Language, string> = {
-    [Language.EN]: 'en-US',
-    [Language.ZH]: 'zh-CN',
-    [Language.DE]: 'de-DE',
-    [Language.ES]: 'es-ES',
-    [Language.FR]: 'fr-FR',
-    [Language.JA]: 'ja-JP',
-  };
-  const locale = localeMap[lang] || 'en-US';
-
-  const options: TimezoneOption[] = [{ value: 'local', label: translations[lang].localTime }];
-  
-  zones.forEach(zone => {
-    try {
-      // Format the time zone offset/name using the SELECTED language locale
-      const offsetPart = new Intl.DateTimeFormat(locale, { timeZone: zone, timeZoneName: 'shortOffset' })
-        .formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value;
-      const regionName = zone.split('/')[1]?.replace('_', ' ') || zone;
-      options.push({ value: zone, label: `${regionName} (${offsetPart})` });
-    } catch (e) { }
-  });
-  return options;
-};
-
 const ClockView: React.FC<Props> = ({ isUiVisible, language }) => {
   const [time, setTime] = useState(new Date());
   const [stayDuration, setStayDuration] = useState('00:00:00');
   const [selectedZone, setSelectedZone] = useState<string>('local');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [timezoneOptions, setTimezoneOptions] = useState<TimezoneOption[]>([]);
   
   const [clockStyle, setClockStyle] = useState<ClockStyle>(() => {
       const saved = localStorage.getItem('chronos_clock_style');
@@ -178,9 +143,36 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language }) => {
       localStorage.setItem('chronos_clock_style', clockStyle);
   }, [clockStyle]);
 
-  // Update timezones when language changes
-  useEffect(() => {
-    setTimezoneOptions(getMajorTimezones(language));
+  // Memoize timezone options generation to avoid expensive re-calculations on every render
+  const timezoneOptions = useMemo(() => {
+    const zones = [
+      'UTC', 'Europe/London', 'Europe/Berlin', 'Europe/Moscow', 'Asia/Dubai',
+      'Asia/Kolkata', 'Asia/Bangkok', 'Asia/Shanghai', 'Asia/Tokyo',
+      'Australia/Sydney', 'Pacific/Auckland', 'America/New_York',
+      'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Sao_Paulo',
+    ];
+    
+    const localeMap: Record<Language, string> = {
+      [Language.EN]: 'en-US',
+      [Language.ZH]: 'zh-CN',
+      [Language.DE]: 'de-DE',
+      [Language.ES]: 'es-ES',
+      [Language.FR]: 'fr-FR',
+      [Language.JA]: 'ja-JP',
+    };
+    const locale = localeMap[language] || 'en-US';
+
+    const options: TimezoneOption[] = [{ value: 'local', label: translations[language].localTime }];
+    
+    zones.forEach(zone => {
+      try {
+        const offsetPart = new Intl.DateTimeFormat(locale, { timeZone: zone, timeZoneName: 'shortOffset' })
+          .formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value;
+        const regionName = zone.split('/')[1]?.replace('_', ' ') || zone;
+        options.push({ value: zone, label: `${regionName} (${offsetPart})` });
+      } catch (e) { }
+    });
+    return options;
   }, [language]);
 
   useEffect(() => {
@@ -269,13 +261,13 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language }) => {
           <div className="relative">
             <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="px-6 py-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 text-sm md:text-base font-bold hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-95 flex items-center gap-3 max-w-[200px] sm:max-w-[280px] justify-between shadow-sm dark:text-white text-slate-900"
+                className="px-6 py-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 text-sm md:text-base font-bold hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-95 flex items-center gap-3 max-w-[200px] sm:max-w-[280px] justify-between shadow-sm dark:text-white text-slate-900 pointer-events-auto cursor-pointer"
             >
                 <span className="truncate">{getLabel(selectedZone)}</span>
                 <svg className={`w-4 h-4 flex-shrink-0 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
             </button>
             {isDropdownOpen && isUiVisible && (
-                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 max-h-72 overflow-y-auto bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/5 py-2 z-50 animate-slide-down scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-transparent">
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-72 max-h-72 overflow-y-auto bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 dark:border-white/5 py-2 z-50 animate-slide-down scrollbar-thin scrollbar-thumb-slate-400 scrollbar-track-transparent pointer-events-auto">
                 {timezoneOptions.map((zone) => (
                     <button
                     key={zone.value}
@@ -283,7 +275,7 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language }) => {
                         setSelectedZone(zone.value);
                         setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors border-b border-white/5 last:border-0 ${selectedZone === zone.value ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 dark:text-slate-200 text-slate-800'}`}
+                    className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors border-b border-white/5 last:border-0 ${selectedZone === zone.value ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 dark:text-slate-200 text-slate-800'} cursor-pointer`}
                     >
                     {zone.label}
                     </button>
@@ -294,7 +286,7 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language }) => {
           
           <button
             onClick={toggleStyle}
-            className="w-12 h-10 md:w-auto md:px-5 md:py-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 flex items-center justify-center gap-2 hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-95 dark:text-white text-slate-900"
+            className="w-12 h-10 md:w-auto md:px-5 md:py-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-md border border-white/30 dark:border-white/10 flex items-center justify-center gap-2 hover:bg-white/30 dark:hover:bg-white/10 transition-all active:scale-95 dark:text-white text-slate-900 pointer-events-auto cursor-pointer"
             aria-label="Toggle Clock Style"
           >
              <span className="text-sm font-bold hidden md:inline">{getStyleLabel()}</span>

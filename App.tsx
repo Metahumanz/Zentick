@@ -49,10 +49,11 @@ const App: React.FC = () => {
 
   // Theme Class Toggle
   useEffect(() => {
+    const root = document.documentElement;
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
   }, [isDark]);
 
@@ -139,10 +140,10 @@ const App: React.FC = () => {
           className={`flex justify-between items-center p-6 md:p-10 pointer-events-auto transition-all duration-1000 transform ${isUiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10 pointer-events-none'}`}
         >
           {/* Tabs */}
-          <nav className="flex bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-lg">
+          <nav className="flex bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-lg cursor-pointer">
             <button
               onClick={() => setActiveTab(AppMode.CLOCK)}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 cursor-pointer ${
                 activeTab === AppMode.CLOCK 
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -152,7 +153,7 @@ const App: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab(AppMode.COUNTDOWN)}
-              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+              className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 cursor-pointer ${
                 activeTab === AppMode.COUNTDOWN 
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' 
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -167,7 +168,7 @@ const App: React.FC = () => {
              {/* Settings Toggle */}
              <button
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className={`w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all ${isSettingsOpen ? 'bg-white text-slate-900' : ''}`}
+                className={`w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all cursor-pointer ${isSettingsOpen ? 'bg-white text-slate-900' : ''}`}
                 title="Particle Settings"
              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
@@ -177,13 +178,13 @@ const App: React.FC = () => {
              <div className="relative" ref={langMenuRef}>
                 <button 
                   onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} 
-                  className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all"
+                  className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
                 >
                     <svg className="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
                 
                 {isLangMenuOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-slide-down z-50">
+                    <div className="absolute top-full right-0 mt-2 w-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-slide-down z-50 pointer-events-auto">
                         {Object.values(Language).map((lang) => (
                             <button
                                 key={lang}
@@ -191,7 +192,7 @@ const App: React.FC = () => {
                                     setLanguage(lang);
                                     setIsLangMenuOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors ${language === lang ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-slate-800 dark:text-slate-200'}`}
+                                className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${language === lang ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-slate-800 dark:text-slate-200'}`}
                             >
                                 {languageLabels[lang]}
                             </button>
@@ -203,7 +204,7 @@ const App: React.FC = () => {
             {/* Theme Toggle */}
             <button
               onClick={() => setIsDark(!isDark)}
-              className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:scale-110 transition-transform active:rotate-90"
+              className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:scale-110 transition-transform active:rotate-90 cursor-pointer"
               aria-label="Toggle Theme"
             >
               {isDark ? (
@@ -223,12 +224,12 @@ const App: React.FC = () => {
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={resetParticleSettings}
-                            className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-indigo-500 transition-colors"
+                            className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-indigo-500 transition-colors cursor-pointer"
                             title="Restore Default"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </button>
-                        <button onClick={() => setIsSettingsOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white">✕</button>
+                        <button onClick={() => setIsSettingsOpen(false)} className="text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer">✕</button>
                     </div>
                 </div>
                 

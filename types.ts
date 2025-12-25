@@ -34,6 +34,8 @@ export interface Particle {
   y: number;
   vx: number;
   vy: number;
+  baseVx: number; // Added: Original X velocity for recovery
+  baseVy: number; // Added: Original Y velocity for recovery
   size: number;
   color: string;
   baseX: number; // For organic movement

@@ -102,7 +102,11 @@ const App: React.FC = () => {
 
       {/* Particle Canvas Layer */}
       <div className="absolute inset-0 z-0">
-        <ParticleBackground isDark={isDark} onDoubleClick={() => {}} />
+        <ParticleBackground 
+            isDark={isDark} 
+            isAlarming={isFlashing}
+            onDoubleClick={() => {}} 
+        />
       </div>
 
       {/* UI Content Layer */}

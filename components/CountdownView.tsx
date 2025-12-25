@@ -20,6 +20,23 @@ const AnimatedDigit: React.FC<{ char: string }> = ({ char }) => {
   );
 };
 
+const SoundVisualizer: React.FC = () => {
+    return (
+        <div className="flex items-end justify-center gap-1.5 h-16 mb-8 pointer-events-none">
+            {[...Array(12)].map((_, i) => (
+                <div 
+                    key={i} 
+                    className="w-2 md:w-3 bg-red-500/80 dark:bg-red-400/80 rounded-full animate-wave shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                    style={{ 
+                        animationDelay: `${i * 0.08}s`,
+                        animationDuration: '0.8s'
+                    }} 
+                />
+            ))}
+        </div>
+    );
+};
+
 const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible, language }) => {
   // Load from LocalStorage
   const [duration, setDuration] = useState<number>(() => {
@@ -182,9 +199,13 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
   if (isFinished) {
     return (
       <div className="flex flex-col items-center justify-center z-50 animate-pulse-fast w-full max-w-[95vw]">
-        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black mb-12 text-red-500 dark:text-red-400 drop-shadow-2xl text-center">
+        <h2 className="text-6xl md:text-8xl lg:text-9xl font-black mb-4 text-red-500 dark:text-red-400 drop-shadow-2xl text-center">
           {t.timesUp}
         </h2>
+        
+        {/* Audio Visualizer */}
+        <SoundVisualizer />
+        
         <button
           onClick={stopAlarm}
           className="px-10 py-5 bg-white text-black text-2xl font-bold rounded-full shadow-2xl hover:scale-110 transition-transform active:scale-95"

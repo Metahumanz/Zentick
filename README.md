@@ -1,58 +1,20 @@
-# ⏳ Zentick
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-> 一个精致、丝滑、现代的网页时钟 & 倒计时工具。
->
-> **在线体验 👉 [zentick.dpdns.org](http://zentick.dpdns.org)**
->
-> [Read this in English](./README_EN.md) 🌍 | [Deutsche Dokumentation](./README_DE.md) 🇩🇪
+# Run and deploy your AI Studio app
 
----
+This contains everything you need to run your app locally.
 
-### 👋 关于这个项目
+View your app in AI Studio: https://ai.studio/apps/drive/10xjme0FKhAUoSgpeb6s47uLh3fG-kcet
 
-这是我开发的第二个网页时钟项目。说实话，第一个版本做得挺简陋的，功能也比较单一。
+## Run Locally
 
-所以这次我决定推倒重来，用更现代的技术栈（Node.js）。Zentick 不仅是为了看时间，更是为了追求视觉体验和交互手感。
+**Prerequisites:**  Node.js
 
-### ✨ 核心功能
 
-*   **三种表盘风格**：
-    *   📱 **现代数字**：仿 Apple 风格的圆润字体，清晰易读。
-    *   ⌚ **模拟时钟**：经典圆盘指针，优雅复古。
-    *   💡 **辉光管 (Nixie)**：模拟金属丝通电后的辉光质感（虽然不像）。
-*   **交互**：背景粒子随鼠标流动，支持双击/F键全屏，全屏下自动隐藏无关 UI。
-*   **倒计时**：支持自定义时长（小时/分/秒），且在切换显示模式时进度不丢失。
-*   **本地记忆**：自动保存你的偏好设置（表盘选择、倒计时时长、语言等），刷新页面不重置。
-*   **模式适配**：支持深色/浅色模式，适配桌面端与移动端。
-
-### 🛠️ 本地运行指南
-
-如果你想在本地运行或二次开发，请按照以下步骤操作。
-
-**前提条件**：你需要安装 [Node.js](https://nodejs.org/) 环境。
-
-1.  **安装依赖**：
-    打开终端，运行：
-    ```bash
-    npm install
-    ```
-
-2.  **配置环境** (可选)：
-    *   如果项目依赖 Google Gemini API（用于 AI 功能），请将 `.env.local` 文件中的 `GEMINI_API_KEY` 设置为你的密钥。
-    *   *注：如果你只使用纯静态的时钟和倒计时功能，可以忽略此步骤。*
-
-3.  **启动项目**：
-    ```bash
-    npm run dev
-    ```
-    启动后，浏览器通常会自动打开本地预览地址。
-
-### 🤝 反馈与建议
-
-如果你喜欢这个项目，或者有任何改进建议、发现了 Bug，非常欢迎在 GitHub 提 **Issue** 或提交 **Pull Request**。
-
-你的每一条反馈都能让 Zentick 变得更好！
-
----
-
-**使用 Gemini 3.0 pro preview 打造**
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`

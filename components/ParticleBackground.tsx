@@ -3,10 +3,11 @@ import { Particle } from '../types';
 
 interface Props {
   isDark: boolean;
+  isAlarming?: boolean;
   onDoubleClick: () => void;
 }
 
-const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
+const ParticleBackground: React.FC<Props> = ({ isDark, isAlarming = false, onDoubleClick }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   // Store mouse state in ref to access inside animation loop
@@ -34,10 +35,45 @@ const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
     const handleInteractionEnd = () => {
        mouseRef.current.isActive = false;
     };
+
+    // Burst effect logic
+    const handleInteractionStart = (x: number, y: number) => {
+        const burstRadius = 300;
+        const burstForce = 15;
+
+        particlesRef.current.forEach(p => {
+            const dx = p.x - x;
+            const dy = p.y - y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < burstRadius) {
+                // Calculate vector away from click
+                const force = (burstRadius - distance) / burstRadius;
+                const angle = Math.atan2(dy, dx);
+                
+                // Add explosive velocity
+                p.vx += Math.cos(angle) * force * burstForce;
+                p.vy += Math.sin(angle) * force * burstForce;
+            }
+        });
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+        handleInteractionStart(e.clientX, e.clientY);
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length > 0) {
+            handleInteractionStart(e.touches[0].clientX, e.touches[0].clientY);
+            mouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, isActive: true };
+        }
+    };
     
     // Add global listeners to ensure particles react even when mouse is over UI elements
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleInteractionEnd);
     window.addEventListener('mouseup', handleInteractionEnd);
 
@@ -54,11 +90,16 @@ const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
       for (let i = 0; i < count; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
+        const vx = (Math.random() - 0.5) * 0.3;
+        const vy = (Math.random() - 0.5) * 0.3;
+        
         newParticles.push({
           x: x,
           y: y,
-          vx: (Math.random() - 0.5) * 0.3, // Slower, drift-like speed
-          vy: (Math.random() - 0.5) * 0.3,
+          vx: vx, // Current velocity
+          vy: vy,
+          baseVx: vx, // Target "drift" velocity
+          baseVy: vy,
           size: Math.random() * 2 + 1,
           color: isDark 
             ? `rgba(255, 255, 255, ${Math.random() * 0.2 + 0.1})` 
@@ -75,17 +116,32 @@ const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       particlesRef.current.forEach((p) => {
-        // Natural Drift
-        p.x += p.vx;
-        p.y += p.vy;
+        // --- PHYSICS UPDATE ---
+        
+        // 1. Friction / Recovery: Smoothly interpolate current velocity back to base velocity
+        // This makes the particles "recover" after a burst or interaction
+        p.vx = p.vx * 0.96 + p.baseVx * 0.04;
+        p.vy = p.vy * 0.96 + p.baseVy * 0.04;
 
-        // Soft boundaries - wrap around instead of bounce for "flow" feel
+        // 2. Alarming State: Add jitter if alarm is ringing
+        let jitterX = 0;
+        let jitterY = 0;
+        if (isAlarming) {
+            jitterX = (Math.random() - 0.5) * 4;
+            jitterY = (Math.random() - 0.5) * 4;
+        }
+
+        // 3. Update Position
+        p.x += p.vx + jitterX;
+        p.y += p.vy + jitterY;
+
+        // Soft boundaries - wrap around
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // Interaction
+        // --- MOUSE INTERACTION (Repulsion) ---
         if (mouseRef.current.isActive) {
           const dx = mouseRef.current.x - p.x;
           const dy = mouseRef.current.y - p.y;
@@ -95,12 +151,10 @@ const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
           if (distance < forceRadius) {
             const forceDirectionX = dx / distance;
             const forceDirectionY = dy / distance;
-            
-            // Create a "Wave" effect: push away if very close, pull slightly if further out
             const maxDistance = forceRadius;
             const force = (maxDistance - distance) / maxDistance;
             
-            // Gentle Repulsion
+            // Gentle Repulsion (modifies position directly for instant feel, separate from velocity physics)
             const directionX = forceDirectionX * force * p.density * 1.5;
             const directionY = forceDirectionY * force * p.density * 1.5;
 
@@ -149,15 +203,17 @@ const ParticleBackground: React.FC<Props> = ({ isDark, onDoubleClick }) => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleInteractionEnd);
       window.removeEventListener('mouseup', handleInteractionEnd);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isDark]);
+  }, [isDark, isAlarming]);
 
   const handleClick = (e: React.MouseEvent) => {
-    // Optional: Add burst effect logic if needed directly via canvas click
+    // Logic handled by global listeners now to ensure coverage
   };
 
   return (

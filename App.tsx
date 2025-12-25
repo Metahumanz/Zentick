@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ParticleBackground from './components/ParticleBackground';
 import ClockView from './components/ClockView';
@@ -12,49 +13,74 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
   const [isFlashing, setIsFlashing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>(Language.EN);
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   
+  // Language State with Persistence
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('chronos_language');
+    if (saved === Language.EN || saved === Language.ZH) {
+      return saved as Language;
+    }
+    const browserLang = navigator.language.slice(0, 2);
+    return browserLang === 'zh' ? Language.ZH : Language.EN;
+  });
+
   // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
+  const settingsBtnRef = useRef<HTMLButtonElement>(null);
+  
   const defaultParticleConfig: ParticleConfig = {
       density: 1.0,
       speed: 1.0,
       size: 1.0,
       connections: 120,
   };
-  const [particleConfig, setParticleConfig] = useState<ParticleConfig>(defaultParticleConfig);
 
-  // Appearance State
+  // Particle Config State with Persistence
+  const [particleConfig, setParticleConfig] = useState<ParticleConfig>(() => {
+    const saved = localStorage.getItem('chronos_particle_config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return defaultParticleConfig;
+      }
+    }
+    return defaultParticleConfig;
+  });
+
+  // Appearance State with Persistence
   const [fontWeight, setFontWeight] = useState<number>(() => {
     const saved = localStorage.getItem('chronos_font_weight');
     return saved ? parseInt(saved) : 900;
   });
 
-  const langMenuRef = useRef<HTMLDivElement>(null);
-
   const { isFullscreen, toggleFullscreen } = useFullscreen();
   const isInactive = useInactivity(5000); 
 
   // Keep UI visible if settings/menu are open
-  const isUiVisible = (!isInactive || isFlashing || isLangMenuOpen || isSettingsOpen);
+  const isUiVisible = (!isInactive || isFlashing || isSettingsOpen);
 
-  const t = translations[language];
+  // Type assertion to allow dynamic key access for settings
+  const t = translations[language] as any;
 
-  // Persist Font Weight
+  // Persist Settings
   useEffect(() => {
     localStorage.setItem('chronos_font_weight', fontWeight.toString());
   }, [fontWeight]);
 
-  // System Theme & Language
+  useEffect(() => {
+    localStorage.setItem('chronos_language', language);
+  }, [language]);
+
+  useEffect(() => {
+    localStorage.setItem('chronos_particle_config', JSON.stringify(particleConfig));
+  }, [particleConfig]);
+
+  // System Theme
   useEffect(() => {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
       setIsDark(false);
-    }
-    const browserLang = navigator.language.slice(0, 2);
-    const supportedLangs = Object.values(Language) as string[];
-    if (supportedLangs.includes(browserLang)) {
-        setLanguage(browserLang as Language);
     }
   }, []);
 
@@ -68,25 +94,31 @@ const App: React.FC = () => {
     }
   }, [isDark]);
 
-  // Click Outside for Language Menu
+  // Click Outside for Settings Menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
-        setIsLangMenuOpen(false);
+      if (
+        isSettingsOpen &&
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node) &&
+        settingsBtnRef.current &&
+        !settingsBtnRef.current.contains(event.target as Node)
+      ) {
+        setIsSettingsOpen(false);
       }
     };
-    if (isLangMenuOpen) {
+
+    if (isSettingsOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isLangMenuOpen]);
+  }, [isSettingsOpen]);
 
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'f') toggleFullscreen();
       if (e.key === 'Escape') {
-          setIsLangMenuOpen(false);
           setIsSettingsOpen(false);
       }
     };
@@ -118,13 +150,8 @@ const App: React.FC = () => {
       setFontWeight(900);
   };
 
-  const languageLabels: Record<Language, string> = {
-      [Language.EN]: 'English',
-      [Language.ZH]: '中文',
-      [Language.DE]: 'Deutsch',
-      [Language.ES]: 'Español',
-      [Language.FR]: 'Français',
-      [Language.JA]: '日本語',
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === Language.EN ? Language.ZH : Language.EN);
   };
 
   return (
@@ -179,40 +206,22 @@ const App: React.FC = () => {
              
              {/* Settings Toggle */}
              <button
+                ref={settingsBtnRef}
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                 className={`w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all cursor-pointer ${isSettingsOpen ? 'bg-white text-slate-900' : ''}`}
-                title="Settings"
+                title={t.settings}
              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
              </button>
 
-             {/* Language Toggle (Globe) */}
-             <div className="relative" ref={langMenuRef}>
-                <button 
-                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)} 
-                  className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all cursor-pointer"
-                >
-                    <svg className="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                </button>
-                
-                {isLangMenuOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-40 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden animate-slide-down z-[100] pointer-events-auto">
-                        {Object.values(Language).map((lang) => (
-                            <button
-                                key={lang}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLanguage(lang);
-                                    setIsLangMenuOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm font-semibold transition-colors cursor-pointer ${language === lang ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-slate-800 dark:text-slate-200'}`}
-                            >
-                                {languageLabels[lang]}
-                            </button>
-                        ))}
-                    </div>
-                )}
-             </div>
+             {/* Language Toggle (Simple Switch) */}
+             <button 
+                onClick={toggleLanguage} 
+                className="w-10 h-10 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-md flex items-center justify-center border border-white/20 hover:bg-white/20 transition-all cursor-pointer text-xs font-black"
+                title="Switch Language"
+             >
+                {language === Language.ZH ? 'EN' : '中'}
+             </button>
 
             {/* Theme Toggle */}
             <button
@@ -231,14 +240,17 @@ const App: React.FC = () => {
 
         {/* Settings Modal */}
         {isSettingsOpen && (
-            <div className="absolute top-24 right-10 w-72 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl z-50 pointer-events-auto settings-modal animate-scale-up text-slate-800 dark:text-white max-h-[80vh] overflow-y-auto">
+            <div 
+              ref={settingsRef}
+              className="absolute top-24 right-10 w-72 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl z-50 pointer-events-auto settings-modal animate-scale-up text-slate-800 dark:text-white max-h-[80vh] overflow-y-auto"
+            >
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-lg font-bold">Settings</h3>
+                    <h3 className="text-lg font-bold">{t.settings}</h3>
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={resetParticleSettings}
                             className="p-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-indigo-500 transition-colors cursor-pointer"
-                            title="Restore Default"
+                            title={t.restoreDefault}
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                         </button>
@@ -248,10 +260,10 @@ const App: React.FC = () => {
 
                 {/* Typography Settings */}
                 <div className="mb-6 border-b border-white/10 pb-4">
-                    <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-3">Typography</h4>
+                    <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-3">{t.typography}</h4>
                      <div className="mb-4">
                         <div className="flex justify-between text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">
-                            <span>Font Weight</span>
+                            <span>{t.fontWeight}</span>
                             <span>{fontWeight}</span>
                         </div>
                         <input 
@@ -265,16 +277,16 @@ const App: React.FC = () => {
                 
                 {/* Particle Settings */}
                 <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-3">Particles</h4>
+                  <h4 className="text-sm font-bold uppercase tracking-widest text-indigo-500 mb-3">{t.particles}</h4>
                   {[
-                    { label: 'Density', key: 'density', min: 0.1, max: 3, step: 0.1 },
-                    { label: 'Speed', key: 'speed', min: 0, max: 3, step: 0.1 },
-                    { label: 'Size', key: 'size', min: 0.5, max: 3, step: 0.1 },
-                    { label: 'Connections', key: 'connections', min: 0, max: 300, step: 10 },
+                    { labelKey: 'density', key: 'density', min: 0.1, max: 3, step: 0.1 },
+                    { labelKey: 'speed', key: 'speed', min: 0, max: 3, step: 0.1 },
+                    { labelKey: 'size', key: 'size', min: 0.5, max: 3, step: 0.1 },
+                    { labelKey: 'connections', key: 'connections', min: 0, max: 300, step: 10 },
                   ].map((item) => (
                     <div key={item.key} className="mb-4">
                           <div className="flex justify-between text-sm font-bold text-slate-500 dark:text-slate-400 mb-2">
-                              <span>{item.label}</span>
+                              <span>{t[item.labelKey]}</span>
                               <span>
                                   {item.key === 'connections' 
                                   ? `${particleConfig[item.key as keyof ParticleConfig]}px` 

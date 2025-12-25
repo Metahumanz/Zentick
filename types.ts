@@ -1,3 +1,4 @@
+
 export enum AppMode {
   CLOCK = 'CLOCK',
   COUNTDOWN = 'COUNTDOWN',
@@ -12,10 +13,6 @@ export enum ClockStyle {
 export enum Language {
   EN = 'en',
   ZH = 'zh',
-  DE = 'de',
-  ES = 'es',
-  FR = 'fr',
-  JA = 'ja',
 }
 
 export interface TimezoneOption {

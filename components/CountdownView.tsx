@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useSound } from '../hooks/useSound';
 import { SoundType, Language } from '../types';
 import { translations } from '../utils/translations';
+import TimePicker from './TimePicker';
 
 interface Props {
   onAlarmStart: () => void;
@@ -58,9 +60,10 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
   const [editMode, setEditMode] = useState(false);
   
   const [isCustomInput, setIsCustomInput] = useState(false);
-  const [customHours, setCustomHours] = useState<string>('0');
-  const [customMinutes, setCustomMinutes] = useState<string>('5');
-  const [customSeconds, setCustomSeconds] = useState<string>('00');
+  // Store picker state as numbers for easier logic
+  const [customHours, setCustomHours] = useState<number>(0);
+  const [customMinutes, setCustomMinutes] = useState<number>(5);
+  const [customSeconds, setCustomSeconds] = useState<number>(0);
 
   const endTimeRef = useRef<number | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -85,9 +88,9 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
     if ((isCustomInput || remaining === duration) && !isRunning) {
        let h = 0, m = 0, s = 0;
        if (isCustomInput) {
-           h = parseInt(customHours) || 0;
-           m = parseInt(customMinutes) || 0;
-           s = parseInt(customSeconds) || 0;
+           h = customHours;
+           m = customMinutes;
+           s = customSeconds;
            targetSeconds = h * 3600 + m * 60 + s;
            // If valid new time, update duration
            if (targetSeconds > 0) {
@@ -185,16 +188,22 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
     setRemaining(secs);
     setEditMode(false);
     setIsCustomInput(false);
-    setCustomHours('0'); // Reset custom inputs visually
-    setCustomMinutes(mins.toString());
-    setCustomSeconds('00');
+    setCustomHours(0);
+    setCustomMinutes(mins);
+    setCustomSeconds(0);
   };
 
   const enableCustomInput = () => {
       setIsCustomInput(true);
       if (isRunning) pauseTimer();
-      // Pre-fill inputs based on current duration if it's not running? 
-      // Or just default to 00:05:00. Let's keep existing values or reset.
+      // Calculate current duration into H M S parts for the picker initialization
+      const h = Math.floor(duration / 3600);
+      const m = Math.floor((duration % 3600) / 60);
+      const s = duration % 60;
+      
+      setCustomHours(h > 99 ? 99 : h);
+      setCustomMinutes(m);
+      setCustomSeconds(s);
   };
 
   if (isFinished) {
@@ -228,60 +237,24 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
   };
 
   // Determine font size based on length of string
-  const fontSizeClass = hasHours || isCustomInput
+  const fontSizeClass = hasHours
     ? "text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem]" // Smaller if hours exist
     : "text-8xl sm:text-8xl md:text-9xl lg:text-[10rem] 2xl:text-[14rem]"; // Larger if just MM:SS
 
   return (
     <div className="flex flex-col items-center animate-fade-in z-10 w-full max-w-[95vw] px-4">
       
-      {/* Timer Display */}
+      {/* Timer Display / Picker */}
       {isCustomInput && !isRunning ? (
-          <div 
-             className="flex items-center justify-center gap-1 sm:gap-2 md:gap-4 text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black text-slate-800 dark:text-slate-100 animate-scale-up"
-             style={{ fontWeight: fontWeight }}
-          >
-              <div className="flex flex-col items-center">
-                  <input 
-                    type="number" 
-                    value={customHours}
-                    onChange={(e) => setCustomHours(e.target.value)}
-                    className="bg-transparent text-center w-[1.4em] focus:outline-none border-b-4 border-indigo-500/50 focus:border-indigo-500 p-0 text-slate-800 dark:text-slate-100"
-                    placeholder="00"
-                    min="0"
-                    max="99"
-                    style={{ fontWeight: fontWeight }}
-                  />
-                  <span className="text-xs sm:text-sm font-bold opacity-50 mt-2 tracking-widest">HRS</span>
-              </div>
-              <span className="-translate-y-4 md:-translate-y-8 text-slate-800 dark:text-slate-100">:</span>
-              <div className="flex flex-col items-center">
-                  <input 
-                    type="number" 
-                    value={customMinutes}
-                    onChange={(e) => setCustomMinutes(e.target.value)}
-                    className="bg-transparent text-center w-[1.4em] focus:outline-none border-b-4 border-indigo-500/50 focus:border-indigo-500 p-0 text-slate-800 dark:text-slate-100"
-                    placeholder="00"
-                    min="0"
-                    max="59"
-                    style={{ fontWeight: fontWeight }}
-                  />
-                  <span className="text-xs sm:text-sm font-bold opacity-50 mt-2 tracking-widest">MIN</span>
-              </div>
-              <span className="-translate-y-4 md:-translate-y-8 text-slate-800 dark:text-slate-100">:</span>
-              <div className="flex flex-col items-center">
-                  <input 
-                     type="number" 
-                     value={customSeconds}
-                     onChange={(e) => setCustomSeconds(e.target.value)}
-                     className="bg-transparent text-center w-[1.4em] focus:outline-none border-b-4 border-indigo-500/50 focus:border-indigo-500 p-0 text-slate-800 dark:text-slate-100"
-                     placeholder="00"
-                     min="0"
-                     max="59"
-                     style={{ fontWeight: fontWeight }}
-                  />
-                  <span className="text-xs sm:text-sm font-bold opacity-50 mt-2 tracking-widest">SEC</span>
-              </div>
+          <div className="animate-scale-up">
+              <TimePicker 
+                 hours={customHours}
+                 minutes={customMinutes}
+                 seconds={customSeconds}
+                 onHourChange={setCustomHours}
+                 onMinuteChange={setCustomMinutes}
+                 onSecondChange={setCustomSeconds}
+              />
           </div>
       ) : (
         <div 
@@ -357,13 +330,13 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
            <div className="mt-8 flex gap-4 animate-slide-down">
                <button 
                 onClick={startTimer}
-                className="px-8 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg transition-transform hover:scale-105 cursor-pointer"
+                className="px-10 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer"
                >
                    {t.start}
                </button>
                <button 
                 onClick={() => { setIsCustomInput(false); setEditMode(true); }}
-                className="px-8 py-3 rounded-full bg-transparent border border-slate-400 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-bold transition-colors cursor-pointer"
+                className="px-10 py-3 rounded-full bg-transparent border-2 border-slate-300 dark:border-slate-600 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-bold transition-colors cursor-pointer"
                >
                    Back
                </button>

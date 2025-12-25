@@ -29,7 +29,15 @@ export const translations = {
     speed: "Speed",
     size: "Size",
     connections: "Connections",
-    restoreDefault: "Restore Default"
+    restoreDefault: "Restore Default",
+    // New Translations
+    back: "Back",
+    hours: "Hours",
+    minutes: "Minutes",
+    seconds: "Seconds",
+    digital: "Digital",
+    analog: "Analog",
+    nixie: "Nixie"
   },
   [Language.ZH]: {
     clock: '时钟',
@@ -58,6 +66,14 @@ export const translations = {
     speed: "速度",
     size: "大小",
     connections: "连线",
-    restoreDefault: "恢复默认"
+    restoreDefault: "恢复默认",
+    // New Translations
+    back: "返回",
+    hours: "时",
+    minutes: "分",
+    seconds: "秒",
+    digital: "数字",
+    analog: "指针",
+    nixie: "辉光"
   }
 };

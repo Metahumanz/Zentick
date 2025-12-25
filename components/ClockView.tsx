@@ -221,10 +221,13 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language, fontWeight }) => {
       else setClockStyle(ClockStyle.DIGITAL);
   }
 
+  // Type assertion for translations
+  const t = translations[language] as any;
+
   const getStyleLabel = () => {
-      if (clockStyle === ClockStyle.DIGITAL) return "Digital";
-      if (clockStyle === ClockStyle.ANALOG) return "Analog";
-      return "Nixie";
+      if (clockStyle === ClockStyle.DIGITAL) return t.digital;
+      if (clockStyle === ClockStyle.ANALOG) return t.analog;
+      return t.nixie;
   }
 
   return (
@@ -296,7 +299,7 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language, fontWeight }) => {
         </div>
 
         <div className={`text-xs md:text-sm font-bold tracking-widest uppercase transition-opacity duration-1000 dark:text-slate-400 text-slate-500 ${isUiVisible ? 'opacity-50' : 'opacity-30'}`}>
-          {translations[language].focusTime}: {stayDuration}
+          {t.focusTime}: {stayDuration}
         </div>
       </div>
     </div>

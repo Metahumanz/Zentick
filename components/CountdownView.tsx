@@ -70,7 +70,8 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
   const { playSound } = useSound();
   const soundIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const t = translations[language];
+  // Type assertion for dynamic access
+  const t = translations[language] as any;
 
   // Save preferences
   useEffect(() => {
@@ -254,6 +255,11 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
                  onHourChange={setCustomHours}
                  onMinuteChange={setCustomMinutes}
                  onSecondChange={setCustomSeconds}
+                 labels={{
+                    hours: t.hours,
+                    minutes: t.minutes,
+                    seconds: t.seconds
+                 }}
               />
           </div>
       ) : (
@@ -338,7 +344,7 @@ const CountdownView: React.FC<Props> = ({ onAlarmStart, onAlarmStop, isUiVisible
                 onClick={() => { setIsCustomInput(false); setEditMode(true); }}
                 className="px-10 py-3 rounded-full bg-transparent border-2 border-slate-300 dark:border-slate-600 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white font-bold transition-colors cursor-pointer"
                >
-                   Back
+                   {t.back}
                </button>
            </div>
       )}

@@ -15,7 +15,7 @@ export default defineConfig({
         description: 'A refined, modern time management dashboard.',
         theme_color: '#0f172a',
         background_color: '#0f172a',
-        display: 'standalone',
+        display: 'fullscreen',
         orientation: 'portrait',
         icons: [
           {

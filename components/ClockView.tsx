@@ -230,6 +230,40 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language, fontWeight }) => {
       return t.nixie;
   }
 
+  // Helper to render Nixie Group
+  const renderNixieGroup = () => {
+      const [h, m, s] = timeString.split(':');
+      
+      return (
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-1 p-4 bg-black/20 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl transition-all duration-500">
+             {/* Hours */}
+             <div className="flex gap-1">
+                 {h.split('').map((char, i) => <NixieDigit key={`h-${i}`} char={char} />)}
+             </div>
+             
+             {/* Separator 1 - Hidden on mobile */}
+             <div className="hidden md:block">
+                 <NixieDigit char=":" />
+             </div>
+
+             {/* Minutes */}
+             <div className="flex gap-1">
+                 {m.split('').map((char, i) => <NixieDigit key={`m-${i}`} char={char} />)}
+             </div>
+
+             {/* Separator 2 - Hidden on mobile */}
+             <div className="hidden md:block">
+                 <NixieDigit char=":" />
+             </div>
+
+             {/* Seconds */}
+             <div className="flex gap-1">
+                 {s.split('').map((char, i) => <NixieDigit key={`s-${i}`} char={char} />)}
+             </div>
+        </div>
+      );
+  };
+
   return (
     <div className="flex flex-col items-center justify-center animate-fade-in relative z-10 w-full max-w-full px-4">
       <div className="relative group cursor-default flex justify-center items-center py-8 min-h-[300px]">
@@ -249,13 +283,7 @@ const ClockView: React.FC<Props> = ({ isUiVisible, language, fontWeight }) => {
                 <div className="absolute -inset-10 bg-indigo-500/5 dark:bg-white/5 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
             </div>
         )}
-        {clockStyle === ClockStyle.NIXIE && (
-             <div className="flex items-center justify-center gap-1 sm:gap-2 p-4 md:p-8 bg-black/20 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl">
-                 {timeString.split('').map((char, index) => (
-                     <NixieDigit key={`${index}-${char}`} char={char} />
-                 ))}
-             </div>
-        )}
+        {clockStyle === ClockStyle.NIXIE && renderNixieGroup()}
       </div>
 
       <div className="mt-6 md:mt-12 flex flex-col items-center space-y-6">

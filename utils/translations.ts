@@ -75,5 +75,42 @@ export const translations = {
     digital: "数字",
     analog: "指针",
     nixie: "辉光"
+  },
+  [Language.DE]: {
+    clock: 'Uhr',
+    timer: 'Timer',
+    localTime: 'Ortszeit',
+    focusTime: 'Fokuszeit',
+    clickToPreset: 'Klicken für Voreinstellung',
+    sound: 'Ton',
+    softChime: 'Sanftes Läuten',
+    digitalBeep: 'Digitaler Piepton',
+    alertAlarm: 'Alarm',
+    timesUp: "Zeit abgelaufen!",
+    acknowledge: "Bestätigen",
+    zenModeHint: "DOPPELKLICK AUF HINTERGRUND FÜR ZEN-MODUS",
+    enterZen: "Zen-Modus aktiviert",
+    exitZen: "Zen-Modus deaktiviert",
+    min: "Min",
+    custom: "Benutzerdefiniert",
+    start: "Start",
+    // Settings
+    settings: "Einstellungen",
+    typography: "Typografie",
+    fontWeight: "Schriftstärke",
+    particles: "Partikel",
+    density: "Dichte",
+    speed: "Geschwindigkeit",
+    size: "Größe",
+    connections: "Verbindungen",
+    restoreDefault: "Standard wiederherstellen",
+    // New Translations
+    back: "Zurück",
+    hours: "Std",
+    minutes: "Min",
+    seconds: "Sek",
+    digital: "Digital",
+    analog: "Analog",
+    nixie: "Nixie"
   }
 };

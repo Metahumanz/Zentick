@@ -194,15 +194,15 @@ const App: React.FC = () => {
 
         {/* Header */}
         <header
-          className={`flex justify-between items-center p-6 md:p-10 pointer-events-auto transition-all duration-1000 transform ${isUiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10 pointer-events-none'}`}
+          className={`relative z-50 flex justify-between items-center p-6 md:p-10 pointer-events-auto transition-all duration-1000 transform ${isUiVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10 pointer-events-none'}`}
         >
           {/* Tabs */}
           <nav className="flex bg-white/10 dark:bg-black/20 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-lg cursor-pointer">
             <button
               onClick={() => setActiveTab(AppMode.CLOCK)}
               className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 cursor-pointer ${activeTab === AppMode.CLOCK
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
             >
               {t.clock}
@@ -210,8 +210,8 @@ const App: React.FC = () => {
             <button
               onClick={() => setActiveTab(AppMode.COUNTDOWN)}
               className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 cursor-pointer ${activeTab === AppMode.COUNTDOWN
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
             >
               {t.timer}
